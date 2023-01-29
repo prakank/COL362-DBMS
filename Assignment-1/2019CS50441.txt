@@ -1,0 +1,89 @@
+Installation and Compilation
+
+postgres=# select version();
+                                            version                                             
+------------------------------------------------------------------------------------------------
+ PostgreSQL 8.3.23 on x86_64-pc-linux-gnu, compiled by GCC gcc (Ubuntu 11.2.0-16ubuntu1) 11.2.0
+(1 row)
+
+
+EXERCISE-1
+
+1. 
+ count 
+-------
+    64
+(1 rows)
+    
+2.
+ count 
+-------
+     3
+(1 rows)
+
+3.
+   team_name    
+----------------
+ Argentina
+ Brazil
+ Croatia
+ Czechoslovakia
+ England
+ France
+ Germany
+ Hungary
+ Italy
+ Netherlands
+ Spain
+ Sweden
+ Uruguay
+ West Germany
+(14 rows)
+
+4.
+ count 
+-------
+     1
+(1 row)
+
+5.
+ player_id 
+-----------
+ P-00275
+ P-00290
+ P-00296
+ P-00319
+ P-00455
+ P-00521
+ P-00724
+ P-00826
+ P-00978
+ P-02034
+ P-02775
+ P-03789
+ P-03816
+ P-03855
+ P-03952
+ P-03988
+ P-03989
+ P-04102
+ P-04216
+ P-04418
+ P-04578
+ P-04652
+ P-04702
+ P-04746
+ P-05670
+ P-05896
+ P-05989
+ P-06416
+ P-06435
+ P-06672
+ P-06978
+ P-07295
+ P-08997
+ P-09215
+ P-09831
+ P-09935
+(36 rows)
+
