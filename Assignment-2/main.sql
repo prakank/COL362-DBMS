@@ -225,4 +225,39 @@ order by number_of_batchmates desc, playerid;
 
 
 -- 11 --
+with validSeasons as
+(
+    select teamID, yearID, count(WSWin) as cntWSWin, sum(G) as games
+    from Teams
+    where WSWin = True
+    group by teamID, yearID
+    having sum(G) >= 110
+),
+totalWSWins as
+(
+    select teamID, count(*) as totalWins
+    from validSeasons
+    group by teamID
+),
+yearAppended as
+(
+    select totalWSWins.teamID as teamid, Teams.name as teamname, Teams.yearID, totalWins
+    from totalWSWins, Teams
+    where Teams.teamID = totalWSWins.teamID
+    order by Teams.teamid, yearID desc
+)
+select yearAppended1.teamID as teamid, teamname, totalWins as total_ws_wins
+from yearAppended as yearAppended1
+join
+(
+    select teamid, max(yearID) as yearID
+    from yearAppended
+    group by teamid
+) as yearAppended2
+on yearAppended1.teamID = yearAppended2.teamID
+and yearAppended2.yearID = yearAppended1.yearID
+order by total_ws_wins desc, yearAppended1.teamid, teamname
+limit 5;
 
+
+-- 12 --
