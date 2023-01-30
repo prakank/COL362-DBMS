@@ -261,3 +261,74 @@ limit 5;
 
 
 -- 12 --
+with careerSaves as
+(
+    select playerID, count(distinct yearID) as num_seasons, sum(SV) as career_saves
+    from Pitching
+    group by playerID
+    having count(distinct yearID) >= 15
+)
+select People.playerID as playerid, People.nameFirst as firstname, People.nameLast as lastname, career_saves, num_seasons
+from People, careerSaves
+where People.playerID = careerSaves.playerID
+order by career_saves desc, num_seasons desc, People.playerID, firstname, lastname
+limit 10;
+
+
+-- 13 --
+with validPitchers as
+(
+    select playerID
+    from Pitching
+    group by playerID
+    having count(distinct teamID) >= 5
+),
+pitchersWithTeams as
+(
+    select Pitching.playerID, Pitching.yearID, Pitching.teamID
+    from Pitching, validPitchers
+    where Pitching.playerID = validPitchers.playerID
+    order by Pitching.playerID, Pitching.yearID
+),
+rowAppended as
+(
+    select *, ROW_NUMBER() over(PARTITION by playerID order by yearID) as row_number
+    from pitchersWithTeams
+)
+select playerID, distinct teamID
+from rowAppended;
+
+
+-- 14 --
+with AwardsTable as
+(
+    select awardID, playerID, count(*) as numAwards
+    from AwardsPlayers
+    group by awardID, playerID
+    order by awardID, numAwards desc, playerID
+),
+maxAwardsTable as
+(
+    select maxAwards1.awardID, playerID, numAwards as num_wins
+    from AwardsTable as maxAwards1
+    join (
+        select awardID, max(numAwards) as maxAwards
+        from AwardsTable
+        group by awardID
+    ) as maxAwards2
+    on maxAwards1.awardID = maxAwards2.awardID
+    and maxAwards = maxAwards1.numAwards
+    order by awardID, numAwards desc, playerID asc
+),
+playerDetails as
+(
+    select awardID as awardid, People.playerID as playerid, People.nameFirst as firstname, People.nameLast as lastname, num_wins
+    from People, maxAwardsTable
+    where People.playerID = maxAwardsTable.playerID
+)
+select distinct on (awardid) *
+from playerDetails
+order by awardid, num_wins desc;
+
+
+-- 15 --
