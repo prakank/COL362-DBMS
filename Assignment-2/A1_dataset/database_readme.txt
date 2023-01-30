@@ -162,12 +162,12 @@ votedBy        Method by which player was voted upon
 ballots        Total ballots cast in that year
 needed         Number of votes needed for selection in that year
 votes          Total votes received
-inducted       Whether player was inducted by that vote or not (Y or N)
+inducted       Whether player was inducted by that vote or not (true or false)
 category       Category in which candidate was honored
 needed_note    Explanation of qualifiers for special elections
 ------------------------------------------------------------------------------
 --  Managers table
- 
+
 playerID       Player ID Number
 yearID         Year
 teamID         Team
@@ -179,7 +179,7 @@ G              Games managed
 W              Wins
 L              Losses
 rank           Team's final position in standings that year
-plyrMgr        Player Manager (denoted by 'Y')
+plyrMgr        Player Manager (denoted by true) (NULL otherwise)
 
 ------------------------------------------------------------------------------
 --  Teams table
@@ -194,10 +194,10 @@ G              Games played
 GHome          Games played at home
 W              Wins
 L              Losses
-DivWin         Division Winner (Y or N)
-WCWin          Wild Card Winner (Y or N)
-LgWin          League Champion(Y or N)
-WSWin          World Series Winner (Y or N)
+DivWin         Division Winner (true or false)
+WCWin          Wild Card Winner (true or false)
+LgWin          League Champion(true or false)
+WSWin          World Series Winner (true or false)
 R              Runs scored
 AB             At bats
 H              Hits by batters
@@ -230,7 +230,7 @@ attendance     Home attendance total
 BPF            Three-year park factor for batters
 PPF            Three-year park factor for pitchers
 teamIDBR       Team ID used by Baseball Reference website
-teamIDlahman45 Team ID used in Lahman database version 4.5
+teamIDdb45 Team ID used in older database version 4.5
 teamIDretro    Team ID used by Retrosheet
 
 ------------------------------------------------------------------------------
@@ -269,7 +269,7 @@ playerID       Manager ID code
 awardID        Name of award won
 yearID         Year
 lgID           League
-tie            Award was a tie (Y or N)
+tie            Award was a tie (true or false)
 notes          Notes about the award
 
 ------------------------------------------------------------------------------
@@ -279,7 +279,7 @@ playerID       Player ID code
 awardID        Name of award won
 yearID         Year
 lgID           League
-tie            Award was a tie (Y or N)
+tie            Award was a tie (true or false)
 notes          Notes about the award
 
 ------------------------------------------------------------------------------

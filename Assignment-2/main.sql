@@ -332,3 +332,207 @@ order by awardid, num_wins desc;
 
 
 -- 15 --
+with managerOrderTable as
+(
+    select playerID as managerID, yearID, teamID, inseason as managerOrder
+    from Managers
+    where yearID >= 2000 and yearID <= 2010
+    order by teamid, yearid, managerOrder
+), minManagerTable as
+(
+    select managerOrderTable1.teamid, managerOrderTable1.yearid, managerid
+    from managerOrderTable as managerOrderTable1
+    join
+    (
+        select teamid, yearid, min(managerorder) as minManage
+        from managerOrderTable
+        group by teamid, yearid
+    ) as managerOrderTable2
+    on managerOrderTable1.teamid = managerOrderTable2.teamid
+    and managerOrderTable1.yearID = managerOrderTable2.yearid
+    and managerOrderTable1.managerorder = minManage
+    order by teamid, yearid, managerid, managerorder
+),
+teamDetails as
+(
+    select Teams.teamid, Teams.name as teamname, Teams.yearid as seasonid, managerid
+    from minManagerTable, Teams
+    where Teams.teamID = minManagerTable.teamID
+    and Teams.yearid = minManagerTable.yearid
+)
+select teamid, teamname, seasonid, managerid, People.nameFirst as managerfirstname, People.nameLast as managerlastname
+from teamDetails, People
+where playerId = managerid
+order by teamid, teamname, seasonid desc, managerid, managerfirstname, managerlastname;
+
+
+-- 16 --
+with playerAwards as
+(
+    select playerID, count(*) as cntAwards
+    from AwardsPlayers
+    group by playerID
+    order by cntAwards desc
+),
+collegeAppended as
+(
+    select playerAwards.playerID, CollegePlaying.yearid, schoolid, cntAwards
+    from playerAwards, CollegePlaying
+    where playerAwards.playerID = CollegePlaying.playerID
+),
+maxYear as
+(
+    select collegeAppended1.playerID, collegeAppended1.yearid, schoolid, cntAwards
+    from collegeAppended as collegeAppended1
+    join
+    (
+        select playerID, max(collegeAppended.yearid) as maxYear
+        from collegeAppended
+        group by playerid
+    ) as collegeAppended2
+    on collegeAppended1.playerID = collegeAppended2.playerID
+    and collegeAppended1.yearid = collegeAppended2.maxYear
+)
+select playerid, schoolName as colleges_name, cntAwards as total_awards
+from maxYear, Schools
+where maxYear.schoolid = Schools.schoolid
+order by total_awards desc, colleges_name, playerid
+limit 10;
+
+
+-- 17 --
+with awardsWonPlayer as
+(
+    select distinct on (AwardsPlayers1.playerid)
+            AwardsPlayers1.playerid, AwardsPlayers1.yearid, awardid
+    from AwardsPlayers as AwardsPlayers1
+    join
+    (
+        select playerid, min(yearid) as minYear
+        from AwardsPlayers
+        group by playerID
+    ) as AwardsPlayers2
+    on AwardsPlayers1.playerID = AwardsPlayers2.playerID
+    and AwardsPlayers1.yearid = minYear
+    order by AwardsPlayers1.playerid, awardid
+), awardsWonManager as
+(
+    select distinct on (AwardsManager1.playerid)
+            AwardsManager1.playerid, AwardsManager1.yearid, awardid
+    from AwardsManagers as AwardsManager1
+    join
+    (
+        select playerid, min(yearid) as minYear
+        from AwardsManagers
+        group by playerID
+    ) as AwardsManager2
+    on AwardsManager1.playerID = AwardsManager2.playerID
+    and AwardsManager1.yearid = minYear
+    order by AwardsManager1.playerid, awardid
+), intesectingPlayers as
+(
+    select playerid
+    from awardsWonPlayer
+    intersect
+    select playerId
+    from awardsWonManager
+), playerDetails as
+(
+    select People.playerID, People.nameFirst as firstname, People.nameLast as lastname
+    from People, intesectingPlayers
+    where intesectingPlayers.playerID = People.playerID
+)
+select playerDetails.playerID, firstname, lastname, awardsWonPlayer.awardid as playerawardid, awardsWonPlayer.yearid as playerawardyear, awardsWonManager.awardid as managerawardid, awardsWonManager.yearid as managerawardyear
+from playerDetails, awardsWonManager, awardsWonPlayer
+where playerDetails.playerid = awardsWonManager.playerID
+and awardsWonManager.playerID = awardsWonPlayer.playerID
+order by playerDetails.playerid, firstname, lastname;
+
+-- 18 --
+with allStarPlayers as
+(
+    select playerid, min(yearid) as seasonid
+    from AllstarFull
+    where GP = 1
+    group by playerid
+), honoredTwoCateg as
+(
+    select playerID, count(distinct category) as num_honored_categories
+    from HallOfFame
+    -- where inducted = True
+    group by playerID
+    having count(distinct category) > 1
+), intesectingPlayers as
+(
+    select playerid
+    from allStarPlayers
+    intersect
+    select playerid
+    from honoredTwoCateg
+), playerDetails as
+(
+    select People.playerID, People.nameFirst as firstname, People.nameLast as lastname
+    from People, intesectingPlayers
+    where intesectingPlayers.playerID = People.playerID
+)
+select playerDetails.playerID, firstname, lastname, honoredTwoCateg.num_honored_categories, seasonid
+from playerDetails, honoredTwoCateg, allStarPlayers
+where playerDetails.playerid = honoredTwoCateg.playerID
+and honoredTwoCateg.playerID = allStarPlayers.playerID
+order by num_honored_categories desc, playerDetails.playerid, firstname, lastname, seasonid;
+
+
+-- 19 --
+with basemanTable as
+(
+    select playerid, sum(G_1b) as g1b, sum(G_2b) as g2b, sum(G_3b) as g3b, sum(G_all) as gall
+    from Appearances
+    group by playerid
+), filtered as
+(
+    select *
+    from basemanTable
+    where
+    (
+        (g1b > 0 and g2b > 0)
+        or
+        (g2b > 0 and g3b > 0)
+        or
+        (g1b > 0 and g3b > 0)
+    )
+)
+select People.playerid, People.nameFirst as firstname, People.nameLast as lastname, gall as G_all, g1b as G_1b, g2b as G_2b, g3b as G_3b
+from filtered, People
+where People.playerid = filtered.playerid
+order by gall desc, People.playerid, firstname, lastname, g1b desc, g2b desc, g3b desc;
+
+
+-- 20 --
+with topSchools as
+(
+    select schoolID
+    from CollegePlaying
+    group by schoolID
+    order by count (distinct playerid) desc
+    limit 5
+), playerAttached as
+(
+    select distinct on (playerid) topSchools.schoolID, playerid
+    from topSchools, CollegePlaying
+    where topSchools.schoolID = CollegePlaying.schoolID
+    order by playerid
+), playerDetails as
+(
+    select People.playerID, People.nameFirst as firstname, People.nameLast as lastname, schoolID
+    from People, playerAttached
+    where playerAttached.playerID = People.playerID
+)
+select Schools.schoolID, schoolname, schoolCity || ' ' || schoolState as schooladdr, playerid, firstname, lastname
+from playerDetails, Schools
+where playerDetails.schoolID = Schools.schoolID
+order by Schools.schoolid, schoolName, schooladdr, playerid, firstname, lastname;
+
+
+-- 21 --
+
+
