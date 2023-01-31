@@ -534,5 +534,302 @@ order by Schools.schoolid, schoolName, schooladdr, playerid, firstname, lastname
 
 
 -- 21 --
+with sameCityState as
+(
+    select People1.playerid as player1, People2.playerID as player2, People1.birthCity, People1.birthState
+    from People as People1, People as People2
+    where People1.birthCity is not null
+    and People1.birthState is not null
+    and People2.birthCity is not null
+    and People2.birthState is not null
+    and People1.playerID <> People2.playerID
+    and People1.birthCity = People2.birthCity
+    and People1.birthState = People2.birthState
+), sameTeamBatting as
+(
+    select distinct player1, player2, birthCity, birthState
+    from Batting as Batting1, Batting as Batting2, sameCityState
+    where Batting1.playerid = player1
+    and Batting2.playerid = player2
+), sameTeamPitching as
+(
+    select distinct player1, player2, birthCity, birthState
+    from Pitching as Pitching1, Pitching as Pitching2, sameCityState
+    where Pitching1.playerid = player1
+    and Pitching2.playerid = player2
+), bothRolesIntersection as
+(
+    select *
+    from sameTeamBatting
+    intersect
+    select *
+    from sameTeamPitching
+), bothRoles as
+(
+    select *, 'both'::text as playerRole
+    from bothRolesIntersection
+), onlyBattingTemp as
+(
+    select *
+    from sameTeamBatting
+    except
+    select *
+    from bothRolesIntersection
+), onlyPitchingTemp as
+(
+    select *
+    from sameTeamPitching
+    except
+    select *
+    from bothRolesIntersection
+), onlyBatting as
+(
+    select *, 'batted'::text as playerRole
+    from onlyBattingTemp
+), onlyPitching as
+(
+    select *, 'pitched'::text as playerRole
+    from onlyPitchingTemp
+), finalTable as
+(
+    select * from bothRoles
+    union
+    select * from onlyBatting
+    union
+    select * from onlyPitching
+)
+select player1 as player1_id, player2 as player2_id, birthcity, birthState, playerRole as role
+from finalTable
+order by birthCity, birthState, player1, player2;
+
+-- 22 --
+with Average as
+(
+    select awardid, yearid, avg(pointswon) as avgpoints
+    from AwardsSharePlayers
+    group by awardid, yearid
+)
+select Average.awardID, Average.yearid as seasonid, playerid, pointsWon as playerpoints, avgpoints as averagepoints
+from Average, AwardsSharePlayers
+where Average.awardID = AwardsSharePlayers.awardID
+and Average.yearid = AwardsSharePlayers.yearid
+and pointsWon >= Average.avgpoints
+order by Average.awardID, seasonid, playerpoints desc, playerid;
 
 
+-- 23 --
+with minusPlayerAward as
+(
+    select playerid from People
+    except
+    select distinct playerid from AwardsPlayers
+), minusManagerAward as
+(
+    select playerid from minusPlayerAward
+    except
+    select distinct playerid from AwardsManagers
+)
+select People.playerid, People.nameFirst || ' ' || People.nameLast as playername, case when deathYear>0 then False else True end as alive
+from People, minusManagerAward
+where minusManagerAward.playerid = People.playerid
+order by People.playerid, playername;
+
+
+-- 24 --
+with recursive pitchingPlayers as
+(
+    select distinct playerid, yearid, teamid
+    from Pitching
+), allStarPlayers as
+(
+    select distinct playerid, yearid, teamid
+    from AllstarFull
+    where GP=1
+), relevantPlayers as
+(
+    select *
+    from pitchingPlayers
+    union
+    select *
+    from allStarPlayers
+), routes(playerid, yearid, teamid, depth) as (
+    select playerid, yearid, teamid, 0
+    from relevantPlayers
+    where playerid = 'webbbr01'
+    union all
+    select distinct relevantPlayers.playerid, relevantPlayers.yearid, relevantPlayers.teamid, depth+1
+    from routes, relevantPlayers
+    where routes.yearid = relevantPlayers.yearid
+    and routes.teamid = relevantPlayers.teamid
+    and depth < 100
+), final as
+(
+    select playerid, yearid, teamid
+    from routes
+    where playerid = 'clemero02'
+    and depth >= 3
+)
+select case when exists (select * from final) then 'True' else 'False' end as pathexists
+from final;
+
+
+-- 25 --
+with recursive pitchingPlayers as
+(
+    select distinct playerid, yearid, teamid
+    from Pitching
+), allStarPlayers as
+(
+    select distinct playerid, yearid, teamid
+    from AllstarFull
+    where GP=1
+), relevantPlayers as
+(
+    select *
+    from pitchingPlayers
+    union
+    select *
+    from allStarPlayers
+), routes(playerid, yearid, teamid, depth) as (
+    select playerid, yearid, teamid, 0
+    from relevantPlayers
+    where playerid = 'garcifr02'
+    union all
+    select distinct relevantPlayers.playerid, relevantPlayers.yearid, relevantPlayers.teamid, depth+1
+    from routes, relevantPlayers
+    where routes.yearid = relevantPlayers.yearid
+    and routes.teamid = relevantPlayers.teamid
+    and depth < 30
+), final as
+(
+    select playerid, yearid, teamid, depth
+    from routes
+    where playerid = 'leagubr01'
+    order by depth
+    limit 1
+), new_table as
+(
+    SELECT
+        CASE WHEN EXISTS 
+        (
+            SELECT * FROM final
+        )
+        THEN (select final.depth from final)
+        ELSE 0
+    END as pathlength
+    from final
+)
+select *
+from new_table;
+
+
+-- 26 --
+with recursive graph(teamA, teamB, depth) as (
+    select teamIDwinner, teamIDloser, 0
+    from SeriesPost
+    where teamIDwinner = 'ARI'
+    union all
+    select distinct graph.teamB, SeriesPost.teamIDloser, depth + 1
+    from graph, SeriesPost
+    where graph.teamB = SeriesPost.teamIDwinner
+)
+select count(distinct depth) as count
+from graph
+where teamA = 'ARI'
+and teamB = 'DET';
+
+
+-- 27 --
+with recursive graph(teamA, teamB, depth) as (
+    select teamIDwinner, teamIDloser, 1
+    from SeriesPost
+    where teamIDwinner = 'HOU'
+    union all
+    select distinct graph.teamB, SeriesPost.teamIDloser, depth + 1
+    from graph, SeriesPost
+    where graph.teamB = SeriesPost.teamIDwinner
+    and depth < 4
+), winnerTeams as
+(
+    select teamA as teamid, max(depth) as numHops
+    from graph
+    group by teamA
+), loserTeams as
+(
+    select teamB as teamid, max(depth) as numHops
+    from graph
+    group by teamB
+), mergedTeams as
+(
+    select * from winnerTeams
+    union
+    select * from loserTeams
+)
+select teamid, max(numHops) as num_hops
+from mergedTeams
+group by teamid
+order by teamid;
+
+
+-- 28 --
+with recursive graph(teamA, teamB, depth) as (
+    select teamIDwinner, teamIDloser, 0
+    from SeriesPost
+    where teamIDwinner = 'WS1'
+    union all
+    select distinct graph.teamB, SeriesPost.teamIDloser, depth + 1
+    from graph, SeriesPost
+    where graph.teamB = SeriesPost.teamIDwinner
+), longestPath as
+(
+    select teamB as teamid, pathlength
+    from graph as graph1
+    join
+    (
+        select max(depth) as pathlength
+        from graph
+    ) as graph2
+    on depth = pathlength
+)
+select Teams.teamid, Teams.name as teamname, pathlength
+from longestPath, Teams
+where longestPath.teamid = Teams.teamid
+order by Teams.teamid, teamname;
+
+
+-- 29 --
+with recursive relevantTeams as 
+(
+    select teamIDwinner
+    from SeriesPost
+    where ties > losses
+    group by teamIDwinner
+), graph(teamA, teamB, depth) as
+(
+    select distinct relevantTeams.teamIDwinner, teamIDloser, 1
+    from relevantTeams, SeriesPost
+    where SeriesPost.teamIDwinner = relevantTeams.teamIDwinner
+    union all
+    select distinct graph.teamB, SeriesPost.teamIDloser, depth + 1
+    from graph, SeriesPost
+    where graph.teamB = SeriesPost.teamIDwinner
+), shortestPath as
+(
+    select graph1.teamA as teamid, pathlength
+    from graph as graph1
+    join
+    (
+        select teamA, min(depth) as pathlength
+        from graph
+        where teamB = 'NYA'
+        group by teamA
+    ) as graph2
+    on depth = pathlength
+    and teamB = 'NYA'
+)
+select *
+from shortestPath;
+
+
+
+-- 30 --
