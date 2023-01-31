@@ -724,50 +724,40 @@ from new_table;
 
 
 -- 26 --
-with recursive graph(teamA, teamB, depth) as (
-    select teamIDwinner, teamIDloser, 0
+with recursive graph(teamA, teamB, depth, path) as (
+    select teamIDwinner, teamIDloser, 0, array[teamIDwinner::text,teamIDloser::text]
     from SeriesPost
     where teamIDwinner = 'ARI'
     union all
-    select distinct graph.teamB, SeriesPost.teamIDloser, depth + 1
+    select distinct graph.teamA, SeriesPost.teamIDloser, depth+1, path || SeriesPost.teamIDloser::text
     from graph, SeriesPost
     where graph.teamB = SeriesPost.teamIDwinner
+    and (not (SeriesPost.teamIDloser = any(path)) )
 )
-select count(distinct depth) as count
+select count(*) as count
 from graph
-where teamA = 'ARI'
-and teamB = 'DET';
+where teamB = 'DET';
 
 
 -- 27 --
-with recursive graph(teamA, teamB, depth) as (
-    select teamIDwinner, teamIDloser, 1
+with recursive graph(teamA, teamB, depth, path) as (
+    select teamIDwinner, teamIDloser, 1, array[teamIDwinner::text,teamIDloser::text]
     from SeriesPost
     where teamIDwinner = 'HOU'
     union all
-    select distinct graph.teamB, SeriesPost.teamIDloser, depth + 1
+    select distinct graph.teamA, SeriesPost.teamIDloser, depth+1, path || SeriesPost.teamIDloser::text
     from graph, SeriesPost
     where graph.teamB = SeriesPost.teamIDwinner
-    and depth < 4
-), winnerTeams as
+    and (not (SeriesPost.teamIDloser = any(path)) )
+    and depth < 3
+), finalTable as
 (
-    select teamA as teamid, max(depth) as numHops
-    from graph
-    group by teamA
-), loserTeams as
-(
-    select teamB as teamid, max(depth) as numHops
+    select teamB as teamid, max(depth) as num_hops
     from graph
     group by teamB
-), mergedTeams as
-(
-    select * from winnerTeams
-    union
-    select * from loserTeams
 )
-select teamid, max(numHops) as num_hops
-from mergedTeams
-group by teamid
+select *
+from finalTable
 order by teamid;
 
 
@@ -804,15 +794,16 @@ with recursive relevantTeams as
     from SeriesPost
     where ties > losses
     group by teamIDwinner
-), graph(teamA, teamB, depth) as
+), graph(teamA, teamB, depth, path) as
 (
-    select distinct relevantTeams.teamIDwinner, teamIDloser, 1
+    select distinct relevantTeams.teamIDwinner, teamIDloser, 1, array[teamIDwinner::text,teamIDloser::text]
     from relevantTeams, SeriesPost
     where SeriesPost.teamIDwinner = relevantTeams.teamIDwinner
     union all
-    select distinct graph.teamB, SeriesPost.teamIDloser, depth + 1
+    select distinct graph.teamA, SeriesPost.teamIDloser, depth + 1, path || SeriesPost.teamIDloser::text
     from graph, SeriesPost
     where graph.teamB = SeriesPost.teamIDwinner
+    and (not (SeriesPost.teamIDloser = any(path)) )
 ), shortestPath as
 (
     select graph1.teamA as teamid, pathlength
@@ -833,3 +824,22 @@ from shortestPath;
 
 
 -- 30 --
+with recursive graph(teamA, teamB, depth, path) as (
+    select teamIDwinner, teamIDloser, 1, array[teamIDwinner::text,teamIDloser::text]
+    from SeriesPost
+    where teamIDwinner = 'DET'
+    union all
+    select distinct graph.teamA, SeriesPost.teamIDloser, depth+1, path || SeriesPost.teamIDloser::text
+    from graph, SeriesPost
+    where graph.teamB = SeriesPost.teamIDwinner
+    and (not (SeriesPost.teamIDloser = any(path)) )
+    -- and depth < 3
+), finalTable as
+(
+    select teamB as teamid, max(depth) as num_hops
+    from graph
+    group by teamB
+)
+select *
+from finalTable
+order by teamid;
