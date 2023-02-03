@@ -86,20 +86,41 @@ order by num_seasons desc, playerid asc, firstname asc, lastname asc, date_of_bi
 -- 6 --
 with validYears as
 (
-    select yearID, teamID, franchID, Teams.name as teamname, W as wins
+    select yearID, teamID, W as wins
     from Teams
     where Teams.divwin = True
     order by wins desc
 ),
 maxWins as
 (
-    select teamID, teamname, franchID, max(wins) as num_wins
+    select teamID, max(wins) as num_wins
     from validYears
-    group by teamID, teamname, franchID
+    group by teamID
+), teamWins as
+(
+    select distinct teamID, num_wins
+    from maxWins, TeamsFranchises
+), teamNameTableTemp as
+(
+    select Teams.teamID, Teams.name, yearid, franchid, num_wins
+    from teamWins, Teams
+    where teamWins.teamID = Teams.teamID
+), teamNameTable as
+(
+    select t1.teamID, t1.name, franchid, num_wins
+    from teamNameTableTemp as t1
+    join 
+    (
+        select teamID, max(yearid) as maxyearid
+        from teamNameTableTemp
+        group by teamID
+    ) as t2
+    on t1.teamID = t2.teamID
+    and t1.yearid = t2.maxyearid
 )
-select teamID as teamid, teamname, franchName as franchisename, num_wins
-from maxWins, TeamsFranchises
-where maxWins.franchID = TeamsFranchises.franchID
+select teamid, name as teamname, franchname as franchisename, num_wins
+from teamNameTable, TeamsFranchises
+where teamNameTable.franchid = TeamsFranchises.franchid
 order by num_wins desc, teamid, teamname, franchisename;
 
 
@@ -150,6 +171,7 @@ maxSalary as
     ) as Salaries2
     on Salaries1.teamID = Salaries2.teamID
     and Salaries2.yearID = Salaries1.yearID
+    and Salaries1.salary = Salaries2.ms
 ),
 teamName as
 (
@@ -166,50 +188,31 @@ order by teamid, teamname, seasonid, playerid, player_firstname, player_lastname
 
 
 -- 9 --
-with battingPlayers as
+with b1 as
 (
-    select distinct playerID
-    from Batting
-),
-pitchingPlayers as
-(
-    select distinct playerID
-    from Pitching
-),
-playerSalaries as
-(
-    select playerID, AVG(salary) as averageSalary
+    select avg(salary) as groupSalary, 'batsman'::text as groupNew
     from Salaries
-    group by playerID
-),
-battingSalaries as
+    where Salaries.playerID = any(select playerId from Batting)
+), p1 as
 (
-    select AVG(averageSalary) as groupSalary, 'batsman'::text as groupNew
-    from battingPlayers, playerSalaries
-    where battingPlayers.playerID = playerSalaries.playerID
-),
-pitchingSalaries as
-(
-    select AVG(averageSalary) as groupSalary, 'pitcher'::text as groupNew
-    from pitchingPlayers, playerSalaries
-    where pitchingPlayers.playerID = playerSalaries.playerID
-),
-mergedTable as
+    select avg(salary) as groupSalary, 'pitcher'::text as groupNew
+    from Salaries
+    where Salaries.playerID = any(select playerId from Pitching)
+), mergedTable as
 (
     select *
-    from battingSalaries
+    from b1
     union all
     select *
-    from pitchingSalaries
+    from p1
 )
 select groupNew as player_category, groupSalary as avg_salary
 from mergedTable
 order by avg_salary desc
 limit 1;
 
-
 -- 10 --
-with playerIDBatchmates as
+with p1Temp as
 (
     select CollegePlaying1.playerID, count(distinct CollegePlaying2.playerID) as number_of_batchmates
     from CollegePlaying as CollegePlaying1, CollegePlaying as CollegePlaying2
@@ -217,11 +220,26 @@ with playerIDBatchmates as
     and CollegePlaying1.yearID = CollegePlaying2.yearID
     and CollegePlaying1.playerID <> CollegePlaying2.playerID
     group by CollegePlaying1.playerID
+), p2 as
+(
+    select playerId, 0 as number_of_batchmates
+    from CollegePlaying
+    where playerid not in (select playerid from p1Temp)
+), p1 as
+(
+    select * from p1Temp
+    union
+    select * from p2
 )
-select People.playerID as playerid, (People.nameFirst || ' ' || People.nameLast) as playername, number_of_batchmates
-from playerIDBatchmates, People
-where playerIDBatchmates.playerID = People.playerID
+select People.playerID as playerid,
+case when People.nameFirst is null then (case when People.nameLast is null then '' else People.nameLast end)
+else (case when People.nameLast is null then People.nameFirst else (People.nameFirst || ' ' || People.nameLast) end)
+end as playername,
+number_of_batchmates
+from p1, People
+where p1.playerID = People.playerID
 order by number_of_batchmates desc, playerid;
+
 
 
 -- 11 --
@@ -285,21 +303,182 @@ with validPitchers as
 ),
 pitchersWithTeams as
 (
-    select Pitching.playerID, Pitching.yearID, Pitching.teamID
+    select Pitching.playerID, Pitching.yearID, Pitching.stint, Pitching.teamID
     from Pitching, validPitchers
     where Pitching.playerID = validPitchers.playerID
     order by Pitching.playerID, Pitching.yearID
 ),
 rowAppended as
 (
-    select *, ROW_NUMBER() over(PARTITION by playerID order by yearID) as row_number
+    select *, ROW_NUMBER() over(PARTITION by playerID order by yearID, stint) as row_number
     from pitchersWithTeams
+), firstTeam as
+(
+    select playerID, teamID as firstteamId
+    from rowAppended
+    where row_number = 1
+), secondTeamTemp as
+(
+    select rowAppended.playerID, rowAppended.teamID, row_number as old_row_number
+    from rowAppended, firstTeam
+    where rowAppended.playerID = firstTeam.playerID and rowAppended.teamID != firstTeam.firstteamId
+), secondTeamNewRow as
+(
+    select playerId, teamID, ROW_NUMBER() over(PARTITION by playerID order by old_row_number) as row_number
+    from secondTeamTemp
+), secondTeam as
+(
+    select playerID, teamID as  secondteamId
+    from secondTeamNewRow
+    where row_number = 1
+), firstTeamNameTableTemp as
+(
+    select distinct playerId, Teams.name as teamname, yearid
+    from firstTeam, Teams
+    where firstTeam.firstteamId = Teams.teamID
+), secondTeamNameTableTemp as
+(
+    select distinct playerId, Teams.name as teamname, yearid
+    from secondTeam, Teams
+    where secondTeam.secondteamId = Teams.teamID
+), firstTeamNameTable as
+(
+    select f1.playerid, teamname
+    from firstTeamNameTableTemp as f1
+    join
+    (
+        select playerid, max(yearid) as maxYear
+        from firstTeamNameTableTemp
+        group by playerid
+    ) as f2
+    on f1.playerid = f2.playerid and f1.yearid = f2.maxYear
+), secondTeamNameTable as
+(
+    select s1.playerid, teamname
+    from secondTeamNameTableTemp as s1
+    join
+    (
+        select playerid, max(yearid) as maxYear
+        from secondTeamNameTableTemp
+        group by playerid
+    ) as s2
+    on s1.playerid = s2.playerid and s1.yearid = s2.maxYear
+), mergedTeams as
+(
+    select firstTeamNameTable.playerId, firstTeamNameTable.teamname as first_teamname, secondTeamNameTable.teamname as second_teamname
+    from firstTeamNameTable, secondTeamNameTable
+    where firstTeamNameTable.playerId = secondTeamNameTable.playerId
 )
-select playerID, distinct teamID
-from rowAppended;
+select mergedTeams.playerId, People.nameFirst as firstname, People.nameLast as lastname, (lower(birthcity) || ' ' || lower(birthstate) || ' ' || lower(birthcountry)) as birth_address, mergedTeams.first_teamname, mergedTeams.second_teamname
+from mergedTeams, People
+where mergedTeams.playerId = People.playerID
+order by mergedTeams.playerId, firstname, lastname, birth_address, first_teamname, second_teamname;
 
 
 -- 14 --
+
+insert into People (playerID, nameFirst, nameLast)
+SELECT 'dunphil02', 'Phil', 'Dunphy'
+FROM (VALUES ('dunphil02', 'Phil', 'Dunphy')) AS new_entry
+WHERE not ('dunphil02' = any(select playerid from People))
+
+UNION
+
+SELECT 'tuckcam01', 'Cameron', 'Tucker'
+FROM (VALUES ('tuckcam01', 'Cameron', 'Tucker')) AS new_entry
+WHERE not ('tuckcam01' = any(select playerid from People))
+
+UNION
+
+SELECT 'scottm02', 'Michael', 'Scott'
+FROM (VALUES ('scottm02', 'Michael', 'Scott')) AS new_entry
+WHERE not ('scottm02' = any(select playerid from People))
+
+UNION
+
+SELECT 'waltjoe', 'Joe', 'Walt'
+FROM (VALUES ('waltjoe', 'Joe', 'Walt')) AS new_entry
+WHERE not ('waltjoe' = any(select playerid from People))
+
+UNION
+
+SELECT 'adamswi01', 'Willie', 'Adams'
+FROM (VALUES ('adamswi01', 'Willie', 'Adams')) AS new_entry
+WHERE not ('adamswi01' = any(select playerid from People))
+
+UNION
+
+SELECT 'yostne01','Ned', 'Yost'
+FROM (VALUES ('yostne01','Ned', 'Yost')) AS new_entry
+WHERE not ('yostne01' = any(select playerid from People));
+
+insert into AwardsPlayers (playerID, awardID, yearID, lgID, tie, notes)
+SELECT 'dunphil02', 'Best Baseman', 2014, '', TRUE, NULL
+FROM (VALUES ('dunphil02', 'Best Baseman', 2014, '', TRUE, NULL)) AS new_entry
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM AwardsPlayers
+  WHERE playerID = 'dunphil02'
+  and awardID = 'Best Baseman'
+  and yearID = 2014
+  and lgID = ''
+)
+UNION
+SELECT 'tuckcam01', 'Best Baseman', 2014, '', TRUE, NULL
+FROM (VALUES ('tuckcam01', 'Best Baseman', 2014, '', TRUE, NULL)) AS new_entry
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM AwardsPlayers
+  WHERE playerID = 'tuckcam01'
+  and awardID = 'Best Baseman'
+  and yearID = 2014
+  and lgID = ''
+)
+UNION
+SELECT 'scottm02', 'ALCS MVP', 2015, 'AA', FALSE, NULL
+FROM (VALUES ('scottm02', 'ALCS MVP', 2015, 'AA', FALSE, NULL)) AS new_entry
+WHERE 1 <> ALL(
+  SELECT 1
+  FROM AwardsPlayers
+  WHERE playerID = 'scottm02'
+  and awardID = 'ALCS MVP'
+  and yearID = 2015
+  and lgID = 'AA'
+)
+UNION
+SELECT 'waltjoe', 'Triple Crown', 2016, '', NULL, NULL
+FROM (VALUES ('waltjoe', 'Triple Crown', 2016, '', NULL, NULL)) AS new_entry
+WHERE 1 <> ALL (
+  SELECT 1
+  FROM AwardsPlayers
+  WHERE playerID = 'waltjoe'
+  and awardID = 'Triple Crown'
+  and yearID = 2016
+  and lgID = ''
+)
+UNION
+SELECT 'adamswi01', 'Gold Glove', 2017, '', FALSE, NULL
+FROM (VALUES ('adamswi01', 'Gold Glove', 2017, '', FALSE, NULL)) AS new_entry
+WHERE 1 <> ALL (
+  SELECT 1
+  FROM AwardsPlayers
+  WHERE playerID = 'adamswi01'
+  and awardID = 'Gold Glove'
+  and yearID = 2017
+  and lgID = ''
+)
+UNION
+SELECT 'yostne01', 'ALCS MVP', 2017, '', NULL, NULL
+FROM (VALUES ('yostne01', 'ALCS MVP', 2017, '', NULL, NULL)) AS new_entry
+WHERE 1 <> ALL (
+  SELECT 1
+  FROM AwardsPlayers
+  WHERE playerID = 'yostne01'
+  and awardID = 'ALCS MVP'
+  and yearID = 2017
+  and lgID = ''
+);
+
 with AwardsTable as
 (
     select awardID, playerID, count(*) as numAwards
@@ -376,13 +555,13 @@ with playerAwards as
 ),
 collegeAppended as
 (
-    select playerAwards.playerID, CollegePlaying.yearid, schoolid, cntAwards
+    select distinct playerAwards.playerID, CollegePlaying.yearid, schoolid, cntAwards
     from playerAwards, CollegePlaying
     where playerAwards.playerID = CollegePlaying.playerID
 ),
 maxYear as
 (
-    select collegeAppended1.playerID, collegeAppended1.yearid, schoolid, cntAwards
+    select collegeAppended1.playerID, schoolid, cntAwards
     from collegeAppended as collegeAppended1
     join
     (
@@ -392,12 +571,29 @@ maxYear as
     ) as collegeAppended2
     on collegeAppended1.playerID = collegeAppended2.playerID
     and collegeAppended1.yearid = collegeAppended2.maxYear
+), t1 as
+(
+    select playerid, schoolName as colleges_name, cntAwards as total_awards
+    from maxYear, Schools
+    where maxYear.schoolid = Schools.schoolid
+), t2 as
+(
+    select playerid, ''::text as colleges_name, cntAwards as total_awards
+    from playerAwards
+    where playerid not in (select playerid from t1)
+), t3 as
+(
+    select playerid, colleges_name, total_awards
+    from t1
+    union all
+    select playerid, colleges_name, total_awards
+    from t2
 )
-select playerid, schoolName as colleges_name, cntAwards as total_awards
-from maxYear, Schools
-where maxYear.schoolid = Schools.schoolid
-order by total_awards desc, colleges_name, playerid
+select playerid, colleges_name, total_awards
+from t3
+order by total_awards desc, colleges_name, playerid asc
 limit 10;
+
 
 
 -- 17 --
@@ -517,7 +713,7 @@ with topSchools as
     limit 5
 ), playerAttached as
 (
-    select distinct on (playerid) topSchools.schoolID, playerid
+    select topSchools.schoolID, playerid
     from topSchools, CollegePlaying
     where topSchools.schoolID = CollegePlaying.schoolID
     order by playerid
@@ -527,10 +723,18 @@ with topSchools as
     from People, playerAttached
     where playerAttached.playerID = People.playerID
 )
-select Schools.schoolID, schoolname, schoolCity || ' ' || schoolState as schooladdr, playerid, firstname, lastname
+select distinct Schools.schoolID, schoolname, 
+case when schoolCity is null then (
+    case when schoolState is null then '' else lower(schoolState) end
+) else (
+    case when schoolState is null then lower(schoolCity) else lower(schoolCity) || ' ' || lower(schoolState) end
+) end as schooladdr,
+playerid, firstname, lastname
 from playerDetails, Schools
 where playerDetails.schoolID = Schools.schoolID
 order by Schools.schoolid, schoolName, schooladdr, playerid, firstname, lastname;
+
+
 
 
 -- 21 --
@@ -652,25 +856,23 @@ with recursive pitchingPlayers as
     union
     select *
     from allStarPlayers
-), routes(playerid, yearid, teamid, depth) as (
-    select playerid, yearid, teamid, 0
-    from relevantPlayers
-    where playerid = 'webbbr01'
+), routeTemp as (
+    select p1.playerid as playera, p2.playerid as playerb, 1 as edge
+    from relevantPlayers as p1, relevantPlayers as p2
+    where p1.yearid = p2.yearid
+    and p2.teamid = p1.teamid
+), routes(playera, playerb, edge, path) as (
+    select playera, playerb, edge, array[playera::text, playerb::text]
+    from routeTemp
+    where playera = 'webbbr01'
     union all
-    select distinct relevantPlayers.playerid, relevantPlayers.yearid, relevantPlayers.teamid, depth+1
-    from routes, relevantPlayers
-    where routes.yearid = relevantPlayers.yearid
-    and routes.teamid = relevantPlayers.teamid
-    and depth < 100
-), final as
-(
-    select playerid, yearid, teamid
-    from routes
-    where playerid = 'clemero02'
-    and depth >= 3
+    select distinct r1.playera, r2.playerb, 0, path || r2.playerb::text
+    from routes as r1, routeTemp as r2
+    where r1.playerb = r2.playera
+    and (not (r2.playerb = any(path)))
 )
-select case when exists (select * from final) then 'True' else 'False' end as pathexists
-from final;
+select exists (select playera, playerb from routes where playerb = 'clemero02') as pathexists;
+
 
 
 -- 25 --
@@ -690,37 +892,27 @@ with recursive pitchingPlayers as
     union
     select *
     from allStarPlayers
-), routes(playerid, yearid, teamid, depth) as (
-    select playerid, yearid, teamid, 0
-    from relevantPlayers
-    where playerid = 'garcifr02'
+), routeTemp as (
+    select p1.playerid as playera, p2.playerid as playerb, count(distinct p1.yearid) as edge
+    from relevantPlayers as p1, relevantPlayers as p2
+    where p1.yearid = p2.yearid
+    and p2.teamid = p1.teamid
+    and p1.playerid <> p2.playerid
+    group by p1.playerid, p2.playerid
+), routes(playera, playerb, edge, depth, path) as (
+    select playera, playerb, edge, 0 as depth, array[playera::text, playerb::text]
+    from routeTemp
+    where playera = 'garcifr02'
     union all
-    select distinct relevantPlayers.playerid, relevantPlayers.yearid, relevantPlayers.teamid, depth+1
-    from routes, relevantPlayers
-    where routes.yearid = relevantPlayers.yearid
-    and routes.teamid = relevantPlayers.teamid
-    and depth < 30
-), final as
-(
-    select playerid, yearid, teamid, depth
-    from routes
-    where playerid = 'leagubr01'
-    order by depth
-    limit 1
-), new_table as
-(
-    SELECT
-        CASE WHEN EXISTS 
-        (
-            SELECT * FROM final
-        )
-        THEN (select final.depth from final)
-        ELSE 0
-    END as pathlength
-    from final
+    select distinct r1.playera, r2.playerb, r1.edge + r2.edge as edge, depth+1, path || r2.playerb::text
+    from routes as r1, routeTemp as r2
+    where r1.playerb = r2.playera
+    and (not (r2.playerb = any(path)))
+    -- and depth < 2
 )
-select *
-from new_table;
+select min(edge) as pathlength
+from routes
+where playerb = 'leagubr01';
 
 
 -- 26 --
@@ -728,11 +920,15 @@ with recursive graph(teamA, teamB, depth, path) as (
     select teamIDwinner, teamIDloser, 0, array[teamIDwinner::text,teamIDloser::text]
     from SeriesPost
     where teamIDwinner = 'ARI'
+    -- and yearid >= 1990
+    -- and yearid <= 2010
     union all
     select distinct graph.teamA, SeriesPost.teamIDloser, depth+1, path || SeriesPost.teamIDloser::text
     from graph, SeriesPost
     where graph.teamB = SeriesPost.teamIDwinner
     and (not (SeriesPost.teamIDloser = any(path)) )
+    -- and yearid >= 1990
+    -- and yearid <= 2010
 )
 select count(*) as count
 from graph
@@ -749,7 +945,7 @@ with recursive graph(teamA, teamB, depth, path) as (
     from graph, SeriesPost
     where graph.teamB = SeriesPost.teamIDwinner
     and (not (SeriesPost.teamIDloser = any(path)) )
-    and depth < 3
+    -- and depth < 3
 ), finalTable as
 (
     select teamB as teamid, max(depth) as num_hops
@@ -770,9 +966,10 @@ with recursive graph(teamA, teamB, depth) as (
     select distinct graph.teamB, SeriesPost.teamIDloser, depth + 1
     from graph, SeriesPost
     where graph.teamB = SeriesPost.teamIDwinner
+    -- and depth < 5
 ), longestPath as
 (
-    select teamB as teamid, pathlength
+    select distinct teamB as teamid, pathlength
     from graph as graph1
     join
     (
@@ -780,11 +977,27 @@ with recursive graph(teamA, teamB, depth) as (
         from graph
     ) as graph2
     on depth = pathlength
+), teamDetails as
+(
+    select distinct Teams.teamid, Teams.name as teamname, yearid, pathlength
+    from longestPath, Teams
+    where longestPath.teamid = Teams.teamid
+    order by Teams.teamid, teamname
+), finalTeam as
+(
+    select distinct f1.teamid, teamname, pathlength
+    from teamDetails as f1
+    join
+    (
+        select teamid, max(yearid) as maxYear
+        from teamDetails
+        group by teamid
+    ) as f2
+    on f1.teamid = f2.teamid and f1.yearid = f2.maxYear
 )
-select Teams.teamid, Teams.name as teamname, pathlength
-from longestPath, Teams
-where longestPath.teamid = Teams.teamid
-order by Teams.teamid, teamname;
+select distinct *
+from finalTeam
+order by teamid, teamname;
 
 
 -- 29 --
@@ -796,7 +1009,7 @@ with recursive relevantTeams as
     group by teamIDwinner
 ), graph(teamA, teamB, depth, path) as
 (
-    select distinct relevantTeams.teamIDwinner, teamIDloser, 1, array[teamIDwinner::text,teamIDloser::text]
+    select distinct relevantTeams.teamIDwinner, teamIDloser, 1, array[relevantTeams.teamIDwinner::text,teamIDloser::text]
     from relevantTeams, SeriesPost
     where SeriesPost.teamIDwinner = relevantTeams.teamIDwinner
     union all
@@ -804,9 +1017,10 @@ with recursive relevantTeams as
     from graph, SeriesPost
     where graph.teamB = SeriesPost.teamIDwinner
     and (not (SeriesPost.teamIDloser = any(path)) )
+    -- and depth < 8
 ), shortestPath as
 (
-    select graph1.teamA as teamid, pathlength
+    select distinct graph1.teamA as teamid, pathlength
     from graph as graph1
     join
     (
@@ -818,28 +1032,50 @@ with recursive relevantTeams as
     on depth = pathlength
     and teamB = 'NYA'
 )
-select *
+select distinct *
 from shortestPath;
 
 
 
 -- 30 --
-with recursive graph(teamA, teamB, depth, path) as (
-    select teamIDwinner, teamIDloser, 1, array[teamIDwinner::text,teamIDloser::text]
+with recursive graph(teamA, teamB, depth, cycle, path) as (
+    select teamIDwinner, teamIDloser, 1, 0, array[teamIDwinner::text,teamIDloser::text]
     from SeriesPost
     where teamIDwinner = 'DET'
+    -- and SeriesPost.yearid >= 1970
+    -- and SeriesPost.yearid <= 2000
     union all
-    select distinct graph.teamA, SeriesPost.teamIDloser, depth+1, path || SeriesPost.teamIDloser::text
-    from graph, SeriesPost
-    where graph.teamB = SeriesPost.teamIDwinner
-    and (not (SeriesPost.teamIDloser = any(path)) )
-    -- and depth < 3
+    select distinct graph.teamA, SeriesPost1.teamIDloser, depth+1, 
+    case
+        when exists (
+            select *
+            from SeriesPost as SeriesPost2
+            where SeriesPost1.teamIDloser = SeriesPost2.teamIDwinner
+            and SeriesPost2.teamIDloser = 'DET'
+            -- and SeriesPost2.yearid >= 1970
+            -- and SeriesPost2.yearid <= 2000
+        ) then 1
+        else 0
+        end as cycle
+    , path || SeriesPost1.teamIDloser::text
+    from graph, SeriesPost as SeriesPost1
+    where graph.teamB = SeriesPost1.teamIDwinner
+    and (not (SeriesPost1.teamIDloser = any(path)) )
+    -- and SeriesPost1.yearid <= 2000
+    -- and SeriesPost1.yearid >= 1970
 ), finalTable as
 (
-    select teamB as teamid, max(depth) as num_hops
-    from graph
-    group by teamB
+    select teamB as teamid, depth, path
+    from graph as g1
+    join
+    (
+        select max(depth) as pathlength
+        from graph
+        where cycle=1
+    ) as g2
+    on depth = pathlength
+    where cycle=1
 )
-select *
+select depth + 1 as cyclelength, count(*) as numcycles
 from finalTable
-order by teamid;
+group by depth;

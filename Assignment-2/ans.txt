@@ -1,0 +1,488 @@
+1.
+ playerid  | firstname |  lastname  | total_caught_stealing 
+-----------+-----------+------------+-----------------------
+ henderi01 | Rickey    | Henderson  |                   335
+ brocklo01 | Lou       | Brock      |                   307
+ butlebr01 | Brett     | Butler     |                   257
+ willsma01 | Maury     | Wills      |                   208
+ pierrju01 | Juan      | Pierre     |                   203
+ campabe01 | Bert      | Campaneris |                   199
+ carewro01 | Rod       | Carew      |                   187
+ nixonot01 | Otis      | Nixon      |                   186
+ morenom01 | Omar      | Moreno     |                   182
+ cedence01 | Cesar     | Cedeno     |                   179
+(10 rows)
+
+2.
+ playerid  | firstname | runscore 
+-----------+-----------+----------
+ aaronha01 | Hank      |     4562
+ bondsba01 | Barry     |     4481
+ ruthba01  | Babe      |     4276
+ mayswi01  | Willie    |     4106
+ musiast01 | Stan      |     3881
+ rodrial01 | Alex      |     3744
+ griffke02 | Ken       |     3682
+ robinfr02 | Frank     |     3616
+ palmera01 | Rafael    |     3560
+ gehrilo01 | Lou       |     3529
+(10 rows)
+
+3.
+552 rows
+
+first entry:
+ playerid  |     playername      | total_points 
+-----------+---------------------+--------------
+ pujolal01 | Albert Pujols       |         3258
+
+last entry: 
+ zieglbr01 | Brad Ziegler        |            1
+
+4.
+ playerid  | firstname | lastname  | career_batting_average 
+-----------+-----------+-----------+------------------------
+ cobbty01  | Ty        | Cobb      | 0.36104532191964094159
+ chenbr01  | Bruce     | Chen      | 0.35927051671732522796
+ willite01 | Ted       | Williams  | 0.34764277123004823734
+ gehrilo01 | Lou       | Gehrig    | 0.34211623179662497065
+ delahed01 | Ed        | Delahanty | 0.34056363674537762619
+ hamilbi01 | Billy     | Hamilton  | 0.33861661140712947228
+ brownpe01 | Pete      | Browning  | 0.33816342802921448216
+ sislege01 | George    | Sisler    | 0.33782808051502398645
+ lajoina01 | Nap       | Lajoie    | 0.33736494806009258662
+ ansonca01 | Cap       | Anson     | 0.33711630254598492196
+(10 rows)
+
+5.
+first five:
+ playerid  |  firstname   |    lastname    | date_of_birth | num_seasons 
+-----------+--------------+----------------+---------------+-------------
+ ansonca01 | Cap          | Anson          | 1852-04-17    |          27
+ ryanno01  | Nolan        | Ryan           | 1947-01-31    |          27
+ johnto01  | Tommy        | John           | 1943-05-22    |          26
+ mcguide01 | Deacon       | McGuire        | 1863-11-18    |          26
+ collied01 | Eddie        | Collins        | 1887-05-02    |          25
+
+last five:
+ zinkch01  | Charlie      | Zink           | 1979-08-26    |           1
+ zinkwa01  | Walter       | Zink           | 1898-11-21    |           1
+ zinnfr01  | Frank        | Zinn           | 1865-12-21    |           1
+ zinsebi01 | Bill         | Zinser         | 1918-01-06    |           1
+ zoccope01 | Peter        | Zoccolillo     | 1977-02-06    |           1
+(18405 rows)
+
+6.
+ teamid |           teamname            |         franchisename         | num_wins 
+--------+-------------------------------+-------------------------------+----------
+ SEA    | Seattle Mariners              | Seattle Mariners              |      116
+ NYA    | New York Yankees              | New York Yankees              |      114
+ BAL    | Baltimore Orioles             | Baltimore Orioles             |      109
+ CIN    | Cincinnati Reds               | Cincinnati Reds               |      108
+ NYN    | New York Mets                 | New York Mets                 |      108
+ ATL    | Atlanta Braves                | Atlanta Braves                |      106
+ SLN    | St. Louis Cardinals           | St. Louis Cardinals           |      105
+ DET    | Detroit Tigers                | Detroit Tigers                |      104
+ OAK    | Oakland Athletics             | Oakland Athletics             |      104
+ HOU    | Houston Astros                | Houston Astros                |      102
+ KCA    | Kansas City Royals            | Kansas City Royals            |      102
+ LAN    | Los Angeles Dodgers           | Los Angeles Dodgers           |      102
+ PHI    | Philadelphia Phillies         | Philadelphia Phillies         |      102
+ ARI    | Arizona Diamondbacks          | Arizona Diamondbacks          |      100
+ CLE    | Cleveland Indians             | Cleveland Indians             |      100
+ LAA    | Los Angeles Angels of Anaheim | Los Angeles Angels of Anaheim |      100
+ SFN    | San Francisco Giants          | San Francisco Giants          |      100
+ CHA    | Chicago Cubs                  | Chicago White Sox             |       99
+ TOR    | Toronto Blue Jays             | Toronto Blue Jays             |       99
+ MIN    | Minnesota Twins               | Minnesota Twins               |       98
+ PIT    | Pittsburgh Pirates            | Pittsburgh Pirates            |       98
+ SDN    | San Diego Padres              | San Diego Padres              |       98
+ WAS    | Washington Nationals          | Washington Nationals          |       98
+ BOS    | Boston Red Sox                | Boston Red Sox                |       97
+ CHN    | Chicago White Sox             | Chicago Cubs                  |       97
+ TBA    | Tampa Bay Rays                | Tampa Bay Rays                |       97
+ MIL    | Milwaukee Brewers             | Milwaukee Brewers             |       96
+ TEX    | Texas Rangers                 | Texas Rangers                 |       96
+ ML4    | Milwaukee Brewers             | Milwaukee Brewers             |       95
+ CAL    | California Angels             | Los Angeles Angels of Anaheim |       93
+ ANA    | Anaheim Angels                | Los Angeles Angels of Anaheim |       92
+ MON    | Montreal Expos                | Washington Nationals          |       60
+(32 rows)
+
+7. check again
+   winning_percentage    | teamid |        teamname        | seasonid 
+-------------------------+--------+------------------------+----------
+ 86.58536585365853658500 | BS1    | Boston Red Stockings   |     1875
+ 82.45614035087719298200 | SLU    | St. Louis Maroons      |     1884
+ 78.78787878787878787900 | CHN    | Chicago White Sox      |     1876
+ 75.89285714285714285700 | NY1    | New York Giants        |     1885
+ 75.00000000000000000000 | PH1    | Philadelphia Athletics |     1871
+(5 rows)
+
+8.
+first entry:
+ teamid |           teamname            | seasonid | playerid  | player_firstname | player_lastname |  salary  
+--------+-------------------------------+----------+-----------+------------------+-----------------+----------
+ ANA    | Anaheim Angels                |     1997 | finlech01 | Chuck            | Finley          |  4000000
+
+last entry:
+ WAS    | Washington Nationals          |     2014 | werthja01 | Jayson           | Werth           | 20000000
+(885 rows)
+
+
+9. 
+ player_category |    avg_salary    
+-----------------+------------------
+ batsman         | 1932532.43509878
+(1 row)
+
+(1 row)
+
+
+10.
+first entry
+ playerid  |      playername       | number_of_batchmates 
+-----------+-----------------------+----------------------
+ allenga01 | Gary Allenson         |                   21
+
+last entry
+ zimmejo02 | Jordan Zimmermann     |                    0
+(6575 rows)
+
+
+11.
+ teamid |      teamname       | total_ws_wins 
+--------+---------------------+---------------
+ NYA    | New York Yankees    |            27
+ SLN    | St. Louis Cardinals |            11
+ BOS    | Boston Red Sox      |             8
+ NY1    | New York Giants     |             7
+ CIN    | Cincinnati Reds     |             5
+(5 rows)
+
+12.
+ playerid  | firstname | lastname  | career_saves | num_seasons 
+-----------+-----------+-----------+--------------+-------------
+ riverma01 | Mariano   | Rivera    |          652 |          19
+ hoffmtr01 | Trevor    | Hoffman   |          601 |          18
+ smithle02 | Lee       | Smith     |          478 |          18
+ francjo01 | John      | Franco    |          424 |          21
+ wagnebi02 | Billy     | Wagner    |          422 |          16
+ eckerde01 | Dennis    | Eckersley |          390 |          24
+ reardje01 | Jeff      | Reardon   |          367 |          16
+ fingero01 | Rollie    | Fingers   |          341 |          17
+ hernaro01 | Roberto   | Hernandez |          326 |          17
+ mesajo01  | Jose      | Mesa      |          321 |          19
+(10 rows)
+
+13.
+fisrt 5:
+ playerid  | firstname  |   lastname    |                 birth_address                  |          first_teamname           |        second_teamname        
+-----------+------------+---------------+------------------------------------------------+-----------------------------------+-------------------------------
+ aardsda01 | David      | Aardsma       | denver co usa                                  | San Francisco Giants              | Chicago White Sox
+ aasedo01  | Don        | Aase          | orange ca usa                                  | Boston Red Sox                    | California Angels
+ abbotpa01 | Paul       | Abbott        | van nuys ca usa                                | Minnesota Twins                   | Cleveland Indians
+ abernte02 | Ted        | Abernathy     | stanley nc usa                                 | Washington Senators               | Cleveland Indians
+ accarje01 | Jeremy     | Accardo       | phoenix az usa                                 | San Francisco Giants              | Toronto Blue Jays
+
+last 5:
+ youngcy01 | Cy         | Young         | gilmore oh usa                                 | Cleveland Spiders                 | St. Louis Cardinals
+ youngma01 | Matt       | Young         | pasadena ca usa                                | Seattle Mariners                  | Los Angeles Dodgers
+ zachach02 | Chris      | Zachary       | knoxville tn usa                               | Houston Astros                    | Kansas City Royals
+ zachato01 | Tom        | Zachary       | graham nc usa                                  | Philadelphia Athletics            | Washington Senators
+ zettlge01 | George     | Zettlein      | williamsburg ny usa                            | Chicago White Stockings           | Troy Haymakers
+(862 rows)
+
+14.
+               awardid               | playerid  | firstname |  lastname   | num_wins 
+-------------------------------------+-----------+-----------+-------------+----------
+ ALCS MVP                            | stewada01 | Dave      | Stewart     |        2
+ All-Star Game MVP                   | cartega01 | Gary      | Carter      |        2
+ Babe Ruth Award                     | koufasa01 | Sandy     | Koufax      |        2
+ Baseball Magazine All-Star          | cobbty01  | Ty        | Cobb        |       29
+ Best Baseman                        | dunphil02 | Phil      | Dunphy      |        1
+ Branch Rickey Award                 | biggicr01 | Craig     | Biggio      |        1
+ Comeback Player of the Year         | liriafr01 | Francisco | Liriano     |        2
+ Cy Young Award                      | clemero02 | Roger     | Clemens     |        7
+ Gold Glove                          | maddugr01 | Greg      | Maddux      |       18
+ Hank Aaron Award                    | rodrial01 | Alex      | Rodriguez   |        4
+ Hutch Award                         | abbotji01 | Jim       | Abbott      |        1
+ Lou Gehrig Memorial Award           | aaronha01 | Hank      | Aaron       |        1
+ Most Valuable Player                | bondsba01 | Barry     | Bonds       |        7
+ NLCS MVP                            | garvest01 | Steve     | Garvey      |        2
+ Pitching Triple Crown               | alexape01 | Pete      | Alexander   |        3
+ Roberto Clemente Award              | baylodo01 | Don       | Baylor      |        1
+ Rolaids Relief Man Award            | quiseda01 | Dan       | Quisenberry |        5
+ Rookie of the Year                  | abreujo02 | Jose      | Abreu       |        1
+ Silver Slugger                      | bondsba01 | Barry     | Bonds       |       12
+ Triple Crown                        | hornsro01 | Rogers    | Hornsby     |        2
+ TSN All-Star                        | willite01 | Ted       | Williams    |       13
+ TSN Fireman of the Year             | quiseda01 | Dan       | Quisenberry |        5
+ TSN Guide MVP                       | foxxji01  | Jimmie    | Foxx        |        3
+ TSN Major League Player of the Year | willite01 | Ted       | Williams    |        5
+ TSN Pitcher of the Year             | clemero02 | Roger     | Clemens     |        5
+ TSN Player of the Year              | mattido01 | Don       | Mattingly   |        3
+ TSN Reliever of the Year            | riverma01 | Mariano   | Rivera      |        3
+ World Series MVP                    | gibsobo01 | Bob       | Gibson      |        2
+(28 rows)
+
+15.
+first entry:
+ teamid |           teamname            | seasonid | managerid | managerfirstname | managerlastname 
+--------+-------------------------------+----------+-----------+------------------+-----------------
+ ANA    | Anaheim Angels                |     2004 | sciosmi01 | Mike             | Scioscia
+ ANA    | Anaheim Angels                |     2003 | sciosmi01 | Mike             | Scioscia
+ ANA    | Anaheim Angels                |     2002 | sciosmi01 | Mike             | Scioscia
+ ANA    | Anaheim Angels                |     2001 | sciosmi01 | Mike             | Scioscia
+ ANA    | Anaheim Angels                |     2000 | sciosmi01 | Mike             | Scioscia
+
+last five:
+ WAS    | Washington Nationals          |     2009 | actama99  | Manny            | Acta
+ WAS    | Washington Nationals          |     2008 | actama99  | Manny            | Acta
+ WAS    | Washington Nationals          |     2007 | actama99  | Manny            | Acta
+ WAS    | Washington Nationals          |     2006 | robinfr02 | Frank            | Robinson
+ WAS    | Washington Nationals          |     2005 | robinfr02 | Frank            | Robinson
+(330 rows)
+330 rows
+
+16.
+ playerid  |       college_name       | total_awards 
+-----------+--------------------------+--------------
+ bondsba01 | Arizona State University |           47
+ willite01 |                          |           39
+ dimagjo01 |                          |           36
+ musiast01 |                          |           34
+ johnswa01 |                          |           33
+ ruthba01  |                          |           33
+ schmimi01 | Ohio University          |           33
+ mayswi01  |                          |           32
+ robinbr01 |                          |           32
+ cobbty01  |                          |           31
+(10 rows)
+
+17.
+ playerid  | firstname | lastname |       playerawardid        | playerawardyear |      managerawardid       | managerawardyear 
+-----------+-----------+----------+----------------------------+-----------------+---------------------------+------------------
+ aloufe01  | Felipe    | Alou     | TSN All-Star               |            1966 | BBWAA Manager of the year |             1994
+ bakerdu01 | Dusty     | Baker    | NLCS MVP                   |            1977 | BBWAA Manager of the year |             1993
+ baylodo01 | Don       | Baylor   | Most Valuable Player       |            1979 | BBWAA Manager of the year |             1995
+ bluegos01 | Ossie     | Bluege   | Baseball Magazine All-Star |            1925 | TSN Manager of the Year   |             1945
+ bowala01  | Larry     | Bowa     | Gold Glove                 |            1972 | BBWAA Manager of the year |             2001
+ gibsoki01 | Kirk      | Gibson   | ALCS MVP                   |            1984 | BBWAA Manager of the year |             2011
+ guilloz01 | Ozzie     | Guillen  | Rookie of the Year         |            1985 | BBWAA Manager of the year |             2005
+ hargrmi01 | Mike      | Hargrove | Rookie of the Year         |            1974 | TSN Manager of the Year   |             1995
+ hodgegi01 | Gil       | Hodges   | Baseball Magazine All-Star |            1949 | TSN Manager of the Year   |             1969
+ johnsda02 | Davey     | Johnson  | Gold Glove                 |            1969 | BBWAA Manager of the year |             1997
+ lasorto01 | Tom       | Lasorda  | Branch Rickey Award        |            2006 | BBWAA Manager of the year |             1983
+ martibi02 | Billy     | Martin   | Babe Ruth Award            |            1953 | TSN Manager of the Year   |             1981
+ penato01  | Tony      | Pena     | Gold Glove                 |            1983 | BBWAA Manager of the year |             2003
+ pinielo01 | Lou       | Piniella | Rookie of the Year         |            1969 | BBWAA Manager of the year |             1995
+ robinfr02 | Frank     | Robinson | Rookie of the Year         |            1956 | BBWAA Manager of the year |             1989
+ rolfere01 | Red       | Rolfe    | TSN All-Star               |            1937 | TSN Manager of the Year   |             1950
+ sciosmi01 | Mike      | Scioscia | TSN All-Star               |            1990 | BBWAA Manager of the year |             2002
+ stanked01 | Eddie     | Stanky   | Baseball Magazine All-Star |            1946 | TSN Manager of the Year   |             1952
+ tebbebi01 | Birdie    | Tebbetts | Baseball Magazine All-Star |            1948 | TSN Manager of the Year   |             1956
+ torrejo01 | Joe       | Torre    | TSN All-Star               |            1964 | BBWAA Manager of the year |             1996
+ virdobi01 | Bill      | Virdon   | Rookie of the Year         |            1955 | TSN Manager of the Year   |             1974
+ willima04 | Matt      | Williams | Silver Slugger             |            1990 | TSN Manager of the Year   |             2014
+(22 rows)
+
+18.
+ playerid  | firstname | lastname | num_honored_categories | seasonid 
+-----------+-----------+----------+------------------------+----------
+ durocle01 | Leo       | Durocher |                      2 |     1936
+ lopezal01 | Al        | Lopez    |                      2 |     1934
+ torrejo01 | Joe       | Torre    |                      2 |     1964
+(3 rows)
+
+19.
+first entry:
+ playerid  |  firstname   |   lastname    | g_all | g_1b | g_2b | g_3b 
+-----------+--------------+---------------+-------+------+------+------
+ rosepe01  | Pete         | Rose          |  3562 |  939 |  628 |  634
+3275 rows
+
+
+20.
+first 5:
+ schoolid  |            schoolname             |   schooladdr   | playerid  | firstname |   lastname    
+-----------+-----------------------------------+----------------+-----------+-----------+---------------
+ arizonast | Arizona State University          | tempe az       | allenga01 | Gary      | Allenson
+ arizonast | Arizona State University          | tempe az       | allenja02 | Jamie     | Allen
+ arizonast | Arizona State University          | tempe az       | bakerdo01 | Doug      | Baker
+ arizonast | Arizona State University          | tempe az       | bandoch01 | Chris     | Bando
+ arizonast | Arizona State University          | tempe az       | bandosa01 | Sal       | Bando
+
+ usc       | University of Southern California | los angeles ca | wetheje01 | Jeff      | Wetherby
+ usc       | University of Southern California | los angeles ca | wilsoar03 | Archie    | Wilson
+ usc       | University of Southern California | los angeles ca | wolfwa01  | Wally     | Wolf
+ usc       | University of Southern California | los angeles ca | workmha01 | Hank      | Workman
+ usc       | University of Southern California | los angeles ca | zitoba01  | Barry     | Zito
+(475 rows)
+
+21.
+first five:
+ player1_id | player2_id |        birthcity         |       birthstate       |  role  
+------------+------------+--------------------------+------------------------+--------
+ faethto01  | francte01  | Aberdeen                 | SD                     | both
+ francte01  | faethto01  | Aberdeen                 | SD                     | both
+ jacksre01  | taylodo01  | Abington                 | PA                     | batted
+ riccich01  | robincr01  | Abington                 | PA                     | batted
+ riccich01  | schalge01  | Abington                 | PA                     | batted
+
+last five:
+ taylofr01  | naragha01  | Zanesville               | OH                     | batted
+ theisdu01  | abbotku01  | Zanesville               | OH                     | batted
+ wietewh01  | catonho01  | Zanesville               | OH                     | batted
+ wietewh01  | greyre01   | Zanesville               | OH                     | batted
+ wietewh01  | merceja01  | Zanesville               | OH                     | both
+(132668 rows)
+
+22.
+first five:
+      awardid       | seasonid | playerid  | playerpoints |  averagepoints   
+--------------------+----------+-----------+--------------+------------------
+ Cy Young           |     1956 | newcodo01 |           10 |                4
+ Cy Young           |     1956 | maglisa01 |            4 |                4
+ Cy Young           |     1957 | spahnwa01 |           15 |                8
+ Cy Young           |     1958 | turlebo01 |            5 |             3.75
+ Cy Young           |     1958 | spahnwa01 |            4 |             3.75
+ Cy Young           |     1959 | wynnea01  |           13 | 5.33333333333333
+
+last five:
+ Rookie of the Year |     2014 | abreujo02 |          150 | 25.7142857142857
+ Rookie of the Year |     2014 | degroja01 |          142 | 25.7142857142857
+ Rookie of the Year |     2014 | hamilbi02 |           92 | 25.7142857142857
+ Rookie of the Year |     2014 | shoemma01 |           40 | 25.7142857142857
+ Rookie of the Year |     2014 | betande01 |           27 | 25.7142857142857
+(2089 rows)
+
+23.
+first entry:
+  playerid  |      playername       | alive 
+------------+-----------------------+-------
+ aardsda01  | David Aardsma         | t
+
+last entry:
+17236 rows
+
+24.
+ pathexists 
+------------
+ t
+(1 row)
+
+25.
+ pathlength 
+------------
+          2
+(1 row) 
+
+26.
+working
+ 1990 to 2010 (inclusive):
+  count 
+-------
+ 11453
+(1 row)
+
+27.
+ teamid | num_hops 
+--------+----------
+ ANA    |        3
+ ARI    |        3
+ ATL    |        3
+ BAL    |        3
+ BOS    |        3
+ BRO    |        3
+ BSN    |        3
+ CAL    |        3
+ CHA    |        3
+ CHN    |        3
+ CIN    |        3
+ CLE    |        3
+ COL    |        3
+ DET    |        3
+ KCA    |        3
+ LAA    |        3
+ LAN    |        3
+ MIL    |        3
+ MIN    |        3
+ ML1    |        3
+ ML4    |        3
+ MON    |        3
+ NY1    |        3
+ NYA    |        3
+ NYN    |        3
+ OAK    |        3
+ PHA    |        3
+ PHI    |        3
+ PIT    |        3
+ SDN    |        3
+ SEA    |        3
+ SFN    |        3
+ SLA    |        3
+ SLN    |        3
+ TBA    |        3
+ TEX    |        3
+ WAS    |        3
+ WS1    |        3
+(38 rows)
+
+28.
+till path length = 5
+ teamid |           teamname            | pathlength 
+--------+-------------------------------+------------
+ ANA    | Anaheim Angels                |          5
+ ARI    | Arizona Diamondbacks          |          5
+ ATL    | Atlanta Braves                |          5
+ BAL    | Baltimore Orioles             |          5
+ BOS    | Boston Red Sox                |          5
+ BRO    | Brooklyn Dodgers              |          5
+ BSN    | Boston Braves                 |          5
+ CAL    | California Angels             |          5
+ CHA    | Chicago Cubs                  |          5
+ CHN    | Chicago White Sox             |          5
+ CIN    | Cincinnati Reds               |          5
+ CLE    | Cleveland Indians             |          5
+ COL    | Colorado Rockies              |          5
+ DET    | Detroit Tigers                |          5
+ HOU    | Houston Astros                |          5
+ KCA    | Kansas City Royals            |          5
+ LAA    | Los Angeles Angels of Anaheim |          5
+ LAN    | Los Angeles Dodgers           |          5
+ MIL    | Milwaukee Brewers             |          5
+ MIN    | Minnesota Twins               |          5
+ ML1    | Milwaukee Braves              |          5
+ ML4    | Milwaukee Brewers             |          5
+ MON    | Montreal Expos                |          5
+ NYA    | New York Yankees              |          5
+ NYN    | New York Mets                 |          5
+ OAK    | Oakland Athletics             |          5
+ PHA    | Philadelphia Athletics        |          5
+ PHI    | Philadelphia Phillies         |          5
+ PIT    | Pittsburgh Pirates            |          5
+ SDN    | San Diego Padres              |          5
+ SEA    | Seattle Mariners              |          5
+ SFN    | San Francisco Giants          |          5
+ SLA    | St. Louis Browns              |          5
+ SLN    | St. Louis Cardinals           |          5
+ TBA    | Tampa Bay Rays                |          5
+ TEX    | Texas Rangers                 |          5
+ TOR    | Toronto Blue Jays             |          5
+ WAS    | Washington Nationals          |          5
+(38 rows)
+
+29. condition till path length 8
+ teamid | pathlength 
+--------+------------
+ BSN    |          3
+(1 row)
+
+30.
+working
+for yearID >= 1970 and yearID <= 2000:
+ cyclelength | numcycles 
+-------------+-----------
+          19 |         2
+(1 row)
