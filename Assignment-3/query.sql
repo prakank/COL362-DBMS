@@ -1,63 +1,72 @@
-with validCityLocationId as
+-- P4 --
+-- create index idx_comment_id on comment(id);
+create index idx_comment_postid on comment(parentpostid);
+create index idx_comment_commentid on comment(parentcommentid);
+-- create index idx_post_hashastag_id on Post_hasTag_Tag(tagid);
+-- create index idx_comment_hashastag_id on Comment_hasTag_Tag(tagid);
+create index idx_post_hashastag_postid on Post_hasTag_Tag(postid);
+create index idx_comment_hashastag_commentid on Comment_hasTag_Tag(commentid);
+create index idx_tag_id on Tag(id);
+
+-- Q4 --
+with t1 as
 (
-    select p1.id
-    from Place p1, Place p2
-    where p2.name = :country_name
-    and p1.partofplaceid = p2.id
-), validPersonId as
+    select id, parentpostid
+    from comment
+), postReply as
 (
-    select distinct Person.id
-    from Person, validCityLocationId
-    where Person.LocationCityId = validCityLocationId.id
-), validForums as
+    select parentpostid as msgid, count(*) as replyComments
+    from t1
+    group by parentpostid
+    having count(*) >= :X
+), t2 as 
 (
-    select distinct f1.id
-    from Forum f1, validPersonId as v1
-    where f1.ModeratorPersonId = v1.id
-), validPosts as
+    select id, parentcommentid
+    from comment
+), commentReply as
 (
-    select distinct p1.id as postid, v1.id as forumid
-    from validForums v1, Post p1
-    where v1.id = p1.ContainerForumId
-), relevantPostTagTable as
+    select parentcommentid as msgid, count(*) as replyComments
+    from t2
+    group by parentcommentid
+    having count(*) >= :X
+), tagAttachedpost as
 (
-    select distinct t1.postid, t1.tagid
-    from Post_hasTag_Tag as t1, Tag as t2, TagClass as t3
-    where t1.tagid = t2.id
-    and t2.TypeTagClassId = t3.id
-    and t3.name = :tagclass
-), tagForumTableTemp as
+    select msgid, tagid
+    from postReply, Post_hasTag_Tag
+    where postReply.msgid = Post_hasTag_Tag.postid
+), tagAttachedcomment as
 (
-    select distinct v1.forumid, v1.postid, v2.tagid
-    from validPosts as v1, relevantPostTagTable as v2
-    where v1.postid = v2.postid
-), tagForumTable as
+    select msgid, tagid
+    from commentReply, Comment_hasTag_Tag
+    where commentReply.msgid = Comment_hasTag_Tag.commentid
+), tagAttachedTemp as
 (
-    select distinct forumid, tagid, count(*) as count
-    from tagForumTableTemp
-    group by forumid, tagid
-), maxTagTable as
+    select tagid, count(*) as num
+    from tagAttachedpost
+    group by tagid
+    union all
+    select tagid, count(*) as num
+    from tagAttachedcomment
+    group by tagid
+), tagAttached as
 (
-    select t1.forumid, t1.tagid, t1.count
-    from tagForumTable t1
-    join (
-        select distinct forumid, max(count) as maxCount
-        from tagForumTable
-        group by forumid
-    ) t2
-    on t1.forumid = t2.forumid
-    and t1.count = t2.maxCount
-), forumName as
-(
-    select forumid, title as forumtitle, tagid, count
-    from maxTagTable, Forum
-    where maxTagTable.forumid = Forum.id
-), tagName as
-(
-    select forumid, forumtitle, name as mostpopulartagname, count
-    from forumName, Tag
-    where forumName.tagid = Tag.id
+    select tagid, sum(num) as count
+    from tagAttachedTemp
+    group by tagid
 )
-select distinct *
-from tagName
-order by count desc, forumid, forumtitle, mostpopulartagname;
+select Tag.name as tagname, count
+from tagAttached, Tag
+where tagAttached.tagid = Tag.id
+order by count desc, tagname
+limit 10;
+
+
+-- C4 --
+-- drop index idx_comment_id;
+drop index idx_comment_postid;
+drop index idx_comment_commentid;
+-- drop index idx_post_hashastag_id;
+-- drop index idx_comment_hashastag_id;
+drop index idx_post_hashastag_postid;
+drop index idx_comment_hashastag_commentid;
+drop index idx_tag_id;

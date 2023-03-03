@@ -1,4 +1,6 @@
--- 1 --
+-- P1 --
+
+-- Q1 --
 with 
 helper(id) as(
     select id from tag where name in :taglist
@@ -238,8 +240,15 @@ brain_fry4(person1sid, person2sid, mutualfriendcount) as (
 select person1sid, person2sid, mutualfriendcount from brain_fry4 order by person1sid, mutualfriendcount desc, person2sid;
 
 
+-- C1 --
 
--- 2 --
+
+
+
+
+-- P2 --
+
+-- Q2 --
 with 
 placeid(countryid) as (
     select id from place where place.name = :country_name and type = 'Country'
@@ -276,8 +285,15 @@ inall(person1id, person2id, person3id) as (
 )
 select count(*) from inall;
 
+-- C2 --
 
--- 3 --
+
+
+
+
+-- P3 --
+
+-- Q3 --
 with TagDateTable as
 (
     select Postid as msgid, creationdate, TagId
@@ -322,7 +338,25 @@ group by tagclassname
 order by count desc, tagclassname;
 
 
--- 4 --
+-- C3 --
+
+
+
+
+
+
+
+-- P4 --
+create index idx_comment_id on comment(id);
+create index idx_comment_postid on comment(parentpostid);
+create index idx_comment_commentid on comment(parentcommentid);
+create index idx_post_hashastag_id on Post_hasTag_Tag(tagid);
+create index idx_comment_hashastag_id on Comment_hasTag_Tag(tagid);
+create index idx_post_hashastag_postid on Post_hasTag_Tag(postid);
+create index idx_comment_hashastag_commentid on Comment_hasTag_Tag(commentid);
+create index idx_tag_id on Tag(id);
+
+-- Q4 --
 with t1 as
 (
     select id, parentpostid
@@ -375,7 +409,30 @@ order by count desc, tagname
 limit 10;
 
 
--- 5 --
+-- C4 --
+drop index idx_comment_id;
+drop index idx_comment_postid;
+drop index idx_comment_commentid;
+drop index idx_post_hashastag_id;
+drop index idx_comment_hashastag_id;
+drop index idx_post_hashastag_postid;
+drop index idx_comment_hashastag_commentid;
+drop index idx_tag_id;
+
+
+
+-- P5 --
+create index idx_place_name on place (name);
+create index idx_person_id on person (id);
+create index idx_tagclass_name on tagclass (name);
+create index idx_person_locationcityid on person (locationcityid);
+create index idx_forum_moderationid on forum (ModeratorPersonId);
+create index idx_post_containerforumid on post (ContainerForumId);
+create index idx_tag_id on tag (id);
+create index idx_forum_id on forum (id);
+create index idx_post_hashastag_id on post_hastag_tag (tagid);
+
+-- Q5 --
 with validCityLocationId as
 (
     select p1.id
@@ -449,3 +506,15 @@ with validCityLocationId as
 select distinct *
 from tagName
 order by count desc, forumid, forumtitle, mostpopulartagname;
+
+-- C5 --
+
+drop index idx_place_name;
+drop index idx_person_id;
+drop index idx_tagclass_name;
+drop index idx_person_locationcityid;
+drop index idx_forum_moderationid;
+drop index idx_post_containerforumid;
+drop index idx_tag_id;
+drop index idx_forum_id;
+drop index idx_post_hashastag_id;
